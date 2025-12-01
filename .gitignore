@@ -1,0 +1,62 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment Variables
+.env
+.env.local
+
+# Output
+output/*
+!output/.gitkeep
+
+# Test Coverage
+.coverage
+.pytest_cache/
+htmlcov/
+
+# Logs
+*.log
+
+# Playwright
+.playwright/
+
+# Node (for testing generated components)
+node_modules/
+.next/
+out/
+*.tsbuildinfo
