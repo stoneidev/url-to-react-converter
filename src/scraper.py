@@ -174,6 +174,42 @@ class WebPageScraper:
         except Exception as e:
             print(f"   ✗ Failed to download {url}: {e}")
 
+    def _remove_hidden_elements(self, soup: BeautifulSoup) -> int:
+        """
+        display: none인 캐러셀/슬라이더 요소 제거
+
+        Args:
+            soup: BeautifulSoup 객체
+
+        Returns:
+            제거된 요소 개수
+        """
+        removed = 0
+
+        # display: none을 가진 모든 요소 찾기
+        # find_all()의 결과를 리스트로 변환하여 수정 중 순회 문제 방지
+        elements_with_style = list(soup.find_all(style=True))
+
+        for element in elements_with_style:
+            # element가 이미 제거된 경우 건너뛰기
+            if not element or not hasattr(element, 'attrs') or not element.attrs:
+                continue
+
+            style = element.attrs.get('style', '')
+            if not style:
+                continue
+
+            # display: none 체크 (공백 무시)
+            if 'display' in style and 'none' in style:
+                # 간단한 파싱 (CSS 파서 없이)
+                style_lower = style.lower().replace(' ', '')
+                if 'display:none' in style_lower:
+                    # 요소 제거
+                    element.decompose()
+                    removed += 1
+
+        return removed
+
     def replace_urls_in_html(self, html: str, base_url: str) -> str:
         """
         HTML 내의 URL을 로컬 경로로 변경
@@ -218,6 +254,12 @@ class WebPageScraper:
             pass  # TODO: srcset 처리
 
         print(f"✅ Replaced {replacements} URLs")
+
+        # 숨겨진 캐러셀/슬라이더 요소 제거
+        print(f"\n🧹 Removing hidden carousel elements...")
+        removed = self._remove_hidden_elements(soup)
+        print(f"✅ Removed {removed} hidden elements")
+
         return str(soup)
 
     async def scrape_and_save(self, url: str, output_name: str = "index") -> Path:
