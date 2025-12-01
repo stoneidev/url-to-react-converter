@@ -210,6 +210,39 @@ class WebPageScraper:
 
         return removed
 
+    def _clear_js_rendered_containers(self, soup: BeautifulSoup) -> int:
+        """
+        JavaScript로 동적 렌더링되는 컨테이너 비우기
+
+        원본 사이트에서는 비어있지만, Playwright 캡처 시점에는
+        JavaScript가 실행되어 내용이 채워진 컨테이너들을 비웁니다.
+        브라우저에서 다시 열 때 JavaScript가 다시 렌더링하므로 중복 방지.
+
+        Args:
+            soup: BeautifulSoup 객체
+
+        Returns:
+            비운 컨테이너 개수
+        """
+        cleared = 0
+
+        # JavaScript로 채워지는 것으로 알려진 컨테이너 ID들
+        js_container_ids = [
+            'band_top_banner',      # 상단 배너
+            'main_slider_banner',   # 메인 슬라이더
+            'four_part_banner',     # 4개 파트 배너
+            'band_center_banner',   # 중앙 배너
+        ]
+
+        for container_id in js_container_ids:
+            container = soup.find(id=container_id)
+            if container:
+                # 컨테이너 내용만 비우고 태그는 유지
+                container.clear()
+                cleared += 1
+
+        return cleared
+
     def _remove_duplicate_scripts_and_links(self, soup: BeautifulSoup) -> int:
         """
         중복된 script 및 link 태그 제거
@@ -305,6 +338,11 @@ class WebPageScraper:
             pass  # TODO: srcset 처리
 
         print(f"✅ Replaced {replacements} URLs")
+
+        # JavaScript로 렌더링되는 컨테이너 비우기
+        print(f"\n🗑️  Clearing JS-rendered containers...")
+        cleared_containers = self._clear_js_rendered_containers(soup)
+        print(f"✅ Cleared {cleared_containers} containers (prevent JS re-rendering)")
 
         # 중복 스크립트/링크 제거
         print(f"\n🔧 Removing duplicate scripts and links...")
