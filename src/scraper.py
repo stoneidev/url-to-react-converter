@@ -210,6 +210,57 @@ class WebPageScraper:
 
         return removed
 
+    def _remove_duplicate_scripts_and_links(self, soup: BeautifulSoup) -> int:
+        """
+        중복된 script 및 link 태그 제거
+
+        Args:
+            soup: BeautifulSoup 객체
+
+        Returns:
+            제거된 요소 개수
+        """
+        removed = 0
+
+        # 중복 script 태그 제거
+        seen_scripts = set()
+        for script in list(soup.find_all('script', src=True)):
+            if not script or not hasattr(script, 'attrs'):
+                continue
+
+            src = script.attrs.get('src', '')
+            if not src:
+                continue
+
+            if src in seen_scripts:
+                # 중복된 스크립트 제거
+                script.decompose()
+                removed += 1
+            else:
+                seen_scripts.add(src)
+
+        # 중복 link 태그 제거 (CSS)
+        seen_links = set()
+        for link in list(soup.find_all('link', href=True)):
+            if not link or not hasattr(link, 'attrs'):
+                continue
+
+            href = link.attrs.get('href', '')
+            rel = link.attrs.get('rel', [])
+            if not href:
+                continue
+
+            # stylesheet만 체크
+            if 'stylesheet' in rel or (isinstance(rel, list) and 'stylesheet' in rel):
+                if href in seen_links:
+                    # 중복된 링크 제거
+                    link.decompose()
+                    removed += 1
+                else:
+                    seen_links.add(href)
+
+        return removed
+
     def replace_urls_in_html(self, html: str, base_url: str) -> str:
         """
         HTML 내의 URL을 로컬 경로로 변경
@@ -255,10 +306,15 @@ class WebPageScraper:
 
         print(f"✅ Replaced {replacements} URLs")
 
+        # 중복 스크립트/링크 제거
+        print(f"\n🔧 Removing duplicate scripts and links...")
+        removed_duplicates = self._remove_duplicate_scripts_and_links(soup)
+        print(f"✅ Removed {removed_duplicates} duplicate script/link tags")
+
         # 숨겨진 캐러셀/슬라이더 요소 제거
         print(f"\n🧹 Removing hidden carousel elements...")
-        removed = self._remove_hidden_elements(soup)
-        print(f"✅ Removed {removed} hidden elements")
+        removed_hidden = self._remove_hidden_elements(soup)
+        print(f"✅ Removed {removed_hidden} hidden elements")
 
         return str(soup)
 
