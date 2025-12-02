@@ -5,10 +5,10 @@ Playwright를 사용하여 동적 페이지 렌더링 및 자산 다운로드
 
 import asyncio
 import os
+import re
 from pathlib import Path
 from typing import Dict, List, Set
 from urllib.parse import urljoin, urlparse
-import hashlib
 
 from playwright.async_api import async_playwright, Page
 import aiohttp
@@ -143,24 +143,58 @@ class WebPageScraper:
         output_dir: Path,
         force_extension: str = None
     ):
-        """개별 파일 다운로드"""
+        """개별 파일 다운로드 (semantic naming)"""
         try:
             async with session.get(url, timeout=aiohttp.ClientTimeout(total=10)) as response:
                 if response.status == 200:
                     content = await response.read()
 
-                    # 파일명 생성 (URL 해시 사용)
-                    url_hash = hashlib.md5(url.encode()).hexdigest()[:8]
+                    # URL에서 semantic한 파일명 추출
+                    parsed = urlparse(url)
+                    path_parts = [p for p in parsed.path.split('/') if p]
 
-                    # 확장자 결정
+                    # 파일명 추출
+                    if path_parts:
+                        original_filename = path_parts[-1]
+                        # 쿼리 파라미터 제거
+                        original_filename = original_filename.split('?')[0]
+                    else:
+                        original_filename = 'unnamed'
+
+                    # 파일명과 확장자 분리
+                    name_parts = original_filename.rsplit('.', 1)
+                    if len(name_parts) == 2:
+                        base_name, ext = name_parts
+                        extension = f'.{ext}'
+                    else:
+                        base_name = name_parts[0]
+                        extension = ''
+
+                    # force_extension이 있으면 사용
                     if force_extension:
                         extension = force_extension
-                    else:
-                        parsed = urlparse(url)
+                    elif not extension:
+                        # 확장자가 없으면 URL에서 추정
                         extension = Path(parsed.path).suffix or '.bin'
 
-                    filename = f"{url_hash}{extension}"
+                    # 파일명 정리 (특수문자 제거, 공백 처리)
+                    safe_base_name = re.sub(r'[^\w\-.]', '_', base_name)
+                    safe_base_name = safe_base_name.strip('_')
+
+                    # 빈 이름 처리
+                    if not safe_base_name:
+                        safe_base_name = 'unnamed'
+
+                    # 파일명 생성
+                    filename = f"{safe_base_name}{extension}"
                     filepath = output_dir / filename
+
+                    # 중복 처리: 파일이 이미 존재하면 카운터 추가
+                    counter = 1
+                    while filepath.exists():
+                        filename = f"{safe_base_name}_{counter}{extension}"
+                        filepath = output_dir / filename
+                        counter += 1
 
                     # 파일 저장
                     filepath.write_bytes(content)

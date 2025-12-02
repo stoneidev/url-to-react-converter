@@ -58,24 +58,32 @@ aws bedrock list-foundation-models --region us-east-1 --query "modelSummaries[?c
 ## Phase 2: 핵심 모듈 구현 (3-5일)
 
 ### scraper.py
-- [ ] 5. Playwright로 페이지 렌더링 및 HTML 추출 기능 구현
-- [ ] 6. CSS/JS/이미지 파일 URL 추출 기능 추가 (네트워크 모니터링)
+- [x] 5. Playwright로 페이지 렌더링 및 HTML 추출 기능 구현
+- [x] 6. CSS/JS/이미지 파일 URL 추출 기능 추가 (네트워크 모니터링)
+- [x] 6-1. 중복 스크립트/링크 제거 기능 추가
+- [x] 6-2. display:none 요소 제거 기능 추가
+- [x] 6-3. JS 동적 렌더링 컨테이너 비우기 기능 추가
 
 ### converter.py
-- [ ] 7. HTMLToJSXConverter 클래스 구현 (속성 변환 로직)
+- [x] 7. HTMLToTSXConverter 클래스 구현 (속성 변환 로직)
   - `class` → `className`
   - `for` → `htmlFor`
-  - 기타 HTML → JSX 속성 매핑
+  - 기타 HTML → TSX 속성 매핑
 
-- [ ] 8. style 속성 객체 변환 기능 추가
+- [x] 8. style 속성 객체 변환 기능 추가
   - `style="color: red"` → `style={{color: 'red'}}`
   - kebab-case → camelCase 변환
 
-- [ ] 9. self-closing 태그 처리 추가
+- [x] 9. self-closing 태그 처리 추가
   - `<img>` → `<img />`
   - void elements 처리
 
-- [ ] 10. converter.py 단위 테스트 작성 및 실행
+- [x] 10. converter.py 단위 테스트 작성 및 실행
+
+### 추가 완료 항목
+- [x] server.py 구현 (로컬 웹서버)
+- [x] similarity_checker.py 구현 (HTML 유사도 검사)
+- [x] 중복 렌더링 문제 해결 (3가지 원인 모두 수정)
 
 ---
 
@@ -169,11 +177,17 @@ aws bedrock list-foundation-models --region us-east-1 --query "modelSummaries[?c
 
 ### Phase 2: 핵심 모듈 구현 ✅
 - [x] scraper.py 구현 (Playwright 스크래핑, 자산 다운로드, 경로 변환)
+  - [x] 중복 스크립트/링크 제거 기능
+  - [x] display:none 요소 제거 기능
+  - [x] JS 동적 렌더링 컨테이너 비우기 기능
 - [x] server.py 구현 (로컬 웹서버)
-- [x] converter.py 구현 (HTML → JSX 완전 변환)
+- [x] converter.py 구현 (HTML → TSX 완전 변환)
 - [x] converter.py 단위 테스트 작성 (20+ 테스트 케이스)
+- [x] similarity_checker.py 구현 (AWS Bedrock Claude를 이용한 HTML 유사도 검사)
 - [x] 예제 HTML 파일 생성 (simple.html)
 - [x] Phase 2 테스트 가이드 작성 (PHASE2_TESTING.md)
+- [x] 유사도 검사 가이드 작성 (SIMILARITY_CHECK_GUIDE.md)
+- [x] 중복 렌더링 문제 완전 해결 (3가지 원인 모두 수정)
 
 ---
 
@@ -198,14 +212,19 @@ aws bedrock list-foundation-models --region us-east-1 --query "modelSummaries[?c
 
 ## 진행 상황 추적
 
-**현재 단계**: ✅ Phase 1 완료 → Phase 2 시작 준비
+**현재 단계**: ✅ Phase 2 완료 → Phase 3 준비 (LangGraph 워크플로우)
 
-**다음 액션**: Phase 2 (핵심 모듈 구현)
-- scraper.py: Playwright 스크래핑
-- converter.py: HTML → JSX 변환
-- workflow.py: LangGraph 워크플로우
+**다음 액션**: Phase 3 (LangGraph 워크플로우)
+- workflow.py: State TypedDict 정의
+- fetch_page_node, parse_and_convert_node 등 노드 구현
+- Bedrock Claude 3.5 Sonnet 연동
 
-**예상 완료일**: 2-3주 후
+**완료된 주요 기능**:
+- ✅ Playwright 웹페이지 스크래핑 (자산 다운로드 포함)
+- ✅ HTML → TSX 완전 변환 (20+ 단위 테스트)
+- ✅ 중복 렌더링 문제 해결 (3가지 원인 모두 수정)
+- ✅ AWS Bedrock을 이용한 HTML 유사도 검사
+- ✅ 로컬 웹서버로 다운로드 HTML 테스트
 
 **마지막 업데이트**: 2025-12-02
 

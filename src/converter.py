@@ -1,16 +1,16 @@
 """
-HTML to JSX 변환 모듈
-HTML 요소를 React JSX 문법으로 변환
+HTML to TSX 변환 모듈
+HTML 요소를 React TypeScript (TSX) 문법으로 변환
 """
 
 from typing import Union, Dict, List
 from bs4 import BeautifulSoup, NavigableString, Tag, Comment
 
 
-class HTMLToJSXConverter:
-    """HTML을 JSX로 변환하는 클래스"""
+class HTMLToTSXConverter:
+    """HTML을 TSX(TypeScript + React)로 변환하는 클래스"""
 
-    # HTML 속성 -> JSX 속성 매핑
+    # HTML 속성 -> TSX 속성 매핑
     ATTR_MAP = {
         'class': 'className',
         'for': 'htmlFor',
@@ -71,13 +71,13 @@ class HTMLToJSXConverter:
 
     def convert(self, html: str) -> str:
         """
-        HTML 문자열을 JSX로 변환
+        HTML 문자열을 TSX로 변환
 
         Args:
             html: HTML 문자열
 
         Returns:
-            JSX 문자열
+            TSX 문자열
         """
         soup = BeautifulSoup(html, 'html.parser')
 
@@ -90,7 +90,7 @@ class HTMLToJSXConverter:
         return self._convert_children(body)
 
     def _convert_element(self, element: Union[Tag, NavigableString]) -> str:
-        """단일 요소를 JSX로 변환"""
+        """단일 요소를 TSX로 변환"""
 
         # 텍스트 노드
         if isinstance(element, NavigableString):
@@ -131,7 +131,7 @@ class HTMLToJSXConverter:
         return ''.join(result)
 
     def _convert_attributes(self, attrs: Dict, tag_name: str) -> str:
-        """HTML 속성을 JSX 속성으로 변환"""
+        """HTML 속성을 TSX 속성으로 변환"""
         if not attrs:
             return ""
 
@@ -170,7 +170,7 @@ class HTMLToJSXConverter:
         return ' ' + ' '.join(jsx_attrs) if jsx_attrs else ''
 
     def _convert_attribute_name(self, name: str, tag_name: str) -> str:
-        """속성명 변환 (HTML -> JSX)"""
+        """속성명 변환 (HTML -> TSX)"""
         # 소문자로 변환
         name_lower = name.lower()
 
@@ -195,7 +195,7 @@ class HTMLToJSXConverter:
 
     def _convert_style_string(self, style_str: str) -> str:
         """
-        style 문자열을 JSX 스타일 객체로 변환
+        style 문자열을 TSX 스타일 객체로 변환
 
         예: "color: red; font-size: 14px"
         -> {{color: 'red', fontSize: '14px'}}
@@ -240,12 +240,12 @@ class HTMLToJSXConverter:
         return parts[0] + ''.join(word.capitalize() for word in parts[1:])
 
     def _escape_text(self, text: str) -> str:
-        """JSX 텍스트 이스케이핑"""
+        """TSX 텍스트 이스케이핑"""
         # 공백만 있는 텍스트는 생략
         if not text.strip():
             return text
 
-        # JSX에서 특수 문자 처리
+        # TSX에서 특수 문자 처리
         text = text.replace('{', '&#123;')
         text = text.replace('}', '&#125;')
 
@@ -288,10 +288,10 @@ def main():
     with open(html_file, 'r', encoding='utf-8') as f:
         html = f.read()
 
-    converter = HTMLToJSXConverter()
-    jsx = converter.convert(html)
+    converter = HTMLToTSXConverter()
+    tsx = converter.convert(html)
 
-    print(jsx)
+    print(tsx)
 
 
 if __name__ == "__main__":
